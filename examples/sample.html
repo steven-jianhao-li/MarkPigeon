@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sample</title>
+    <style>
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: #24292e;
+}
+.markdown-body { box-sizing: border-box; }
+h1, h2, h3, h4, h5, h6 { margin-top: 24px; margin-bottom: 16px; font-weight: 600; }
+h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+code { background-color: rgba(27, 31, 35, 0.05); padding: 0.2em 0.4em; border-radius: 3px; font-size: 85%; }
+pre { background-color: #f6f8fa; padding: 16px; overflow: auto; border-radius: 6px; }
+pre code { background: none; padding: 0; }
+blockquote { margin: 0; padding: 0 1em; color: #6a737d; border-left: 0.25em solid #dfe2e5; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 6px 13px; border: 1px solid #dfe2e5; }
+tr:nth-child(2n) { background-color: #f6f8fa; }
+img { max-width: 100%; height: auto; }
+a { color: #0366d6; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+    <article class="markdown-body">
+<h1>MarkPigeon 综合测试文档</h1>
+<p>这是一个用于测试 MarkPigeon 各项功能的示例 Markdown 文档，包含图片、公式、外链、代码等多种元素。</p>
+<h2>📷 图片测试</h2>
+<h3>本地图片</h3>
+<p>下面是一张本地图片：</p>
+<p><img alt="示例图片" src="./assets_sample/example.png"/></p>
+<h3>网络图片</h3>
+<p>下面是一张来自网络的图片（不会被打包）：</p>
+<p><img alt="GitHub Logo" src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"/></p>
+<hr/>
+<h2>📐 数学公式</h2>
+<h3>行内公式</h3>
+<p>这是行内公式：$E = mc^2$，描述了质能等价关系。</p>
+<h3>块级公式</h3>
+<p>高斯定理：</p>
+<p>$$
+\oint_S \mathbf{E} \cdot d\mathbf{A} = \frac{Q}{\varepsilon_0}
+$$</p>
+<p>二次方程求根公式：</p>
+<p>$$
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$</p>
+<p>欧拉恒等式：</p>
+<p>$$
+e^{i\pi} + 1 = 0
+$$</p>
+<hr/>
+<h2>🔗 外部链接</h2>
+<ul>
+<li><a href="https://github.com/steven-jianhao-li/MarkPigeon">MarkPigeon GitHub</a> - 项目主页</li>
+<li><a href="https://www.python.org/">Python 官网</a> - Python 编程语言</li>
+<li><a href="https://www.markdownguide.org/">Markdown 指南</a> - Markdown 语法参考</li>
+</ul>
+<hr/>
+<h2>💻 代码展示</h2>
+<h3>Python</h3>
+<pre><code class="language-python">def fibonacci(n: int) -&gt; int:
+    """计算斐波那契数列第 n 项"""
+    if n &lt;= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+# 使用示例
+for i in range(10):
+    print(f"F({i}) = {fibonacci(i)}")
+</code></pre>
+<h3>JavaScript</h3>
+<pre><code class="language-javascript">// 异步函数示例
+async function fetchData(url) {
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+</code></pre>
+<h3>Bash</h3>
+<pre><code class="language-bash">#!/bin/bash
+# 批量转换 Markdown 文件
+for file in *.md; do
+    echo "Converting: $file"
+    markpigeon "$file" --theme github --zip
+done
+echo "Done!"
+</code></pre>
+<hr/>
+<h2>📋 表格</h2>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th style="text-align:center">状态</th>
+<th style="text-align:center">优先级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Markdown 解析</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">P0</td>
+<td>支持 CommonMark 标准</td>
+</tr>
+<tr>
+<td>图片提取</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">P0</td>
+<td>智能资源隔离</td>
+</tr>
+<tr>
+<td>主题支持</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">P1</td>
+<td>兼容 Typora CSS</td>
+</tr>
+<tr>
+<td>ZIP 打包</td>
+<td style="text-align:center">✅</td>
+<td style="text-align:center">P1</td>
+<td>三种导出模式</td>
+</tr>
+<tr>
+<td>数学公式</td>
+<td style="text-align:center">🔄</td>
+<td style="text-align:center">P2</td>
+<td>需要 MathJax/KaTeX</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h2>📝 文本格式</h2>
+<ul>
+<li><strong>粗体文本</strong></li>
+<li><em>斜体文本</em></li>
+<li><s>删除线</s></li>
+<li><code>行内代码</code></li>
+<li><u>下划线</u>（HTML）</li>
+<li><mark>高亮文本</mark>（HTML）</li>
+</ul>
+<hr/>
+<h2>📌 引用</h2>
+<blockquote>
+<p>📖 "The best way to predict the future is to invent it."</p>
+<p>— Alan Kay</p>
+</blockquote>
+<h3>嵌套引用</h3>
+<blockquote>
+<p>这是第一层引用</p>
+<blockquote>
+<p>这是嵌套的第二层引用</p>
+<blockquote>
+<p>这是第三层引用</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<hr/>
+<h2>✅ 任务列表</h2>
+<ul>
+<li>[x] 完成核心模块开发</li>
+<li>[x] 实现 CLI 接口</li>
+<li>[x] 实现 GUI 接口</li>
+<li>[x] 添加国际化支持</li>
+<li>[ ] 添加数学公式渲染支持</li>
+<li>[ ] 添加代码高亮主题</li>
+</ul>
+<hr/>
+<h2>📊 列表</h2>
+<h3>无序列表</h3>
+<ul>
+<li>苹果 🍎
+<ul>
+<li>红富士</li>
+<li>青苹果</li>
+</ul>
+</li>
+<li>橙子 🍊</li>
+<li>香蕉 🍌</li>
+</ul>
+<h3>有序列表</h3>
+<ol>
+<li>第一步：安装依赖</li>
+<li>第二步：配置环境</li>
+<li>第三步：运行程序
+<ol>
+<li>启动 GUI</li>
+<li>或使用 CLI</li>
+</ol>
+</li>
+</ol>
+<hr/>
+<h2>🎯 定义列表</h2>
+<dl>
+<dt>MarkPigeon</dt>
+<dd>一款功能强大的 Markdown 转 HTML 工具</dd>
+<dt>智能资源隔离</dt>
+<dd>自动提取本地图片到独立文件夹，解决分享时图片丢失的问题</dd>
+</dl>
+<hr/>
+<h2>📎 脚注</h2>
+<p>这是一段带有脚注的文字<a href="%E8%BF%99%E6%98%AF%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%84%9A%E6%B3%A8%E7%9A%84%E5%86%85%E5%AE%B9%E3%80%82">^1</a>。这里还有另一个脚注<a href="%E8%BF%99%E6%98%AF%E7%AC%AC%E4%BA%8C%E4%B8%AA%E8%84%9A%E6%B3%A8%E7%9A%84%E5%86%85%E5%AE%B9%EF%BC%8C%E5%8C%85%E5%90%AB%E6%9B%B4%E5%A4%9A%E7%BB%86%E8%8A%82%E3%80%82">^2</a>。</p>
+<hr/>
+<h2>🌐 HTML 内嵌</h2>
+<div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; text-align: center;">
+<h3 style="margin: 0;">MarkPigeon</h3>
+<p style="margin: 10px 0 0 0;">让 Markdown 分享变得优雅简单 ✨</p>
+</div>
+<hr/>
+<h2>🔚 分隔线</h2>
+<p>以上是各种 Markdown 元素的测试，用于验证 MarkPigeon 的转换功能。</p>
+<hr/>
+<p><em>由 MarkPigeon 生成 | <a href="https://github.com/steven-jianhao-li/MarkPigeon">GitHub</a></em></p>
+
+    </article>
+</body>
+</html>

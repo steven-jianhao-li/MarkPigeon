@@ -27,9 +27,18 @@ from PySide6.QtWidgets import (
 )
 
 from ...core import __version__
+from ...core.config import get_config, save_config
 from ...core.converter import BatchResult, Converter, ExportMode
 from ...core.i18n import get_i18n
-from .components import DropZone, ExportModeSelector, FileListWidget, ProgressWidget, ThemeSelector
+from ...core.publisher import GitHubPublisher
+from .components import (
+    DropZone,
+    ExportModeSelector,
+    FileListWidget,
+    ProgressWidget,
+    ThemeSelector,
+)
+from .settings_dialog import SettingsDialog
 
 
 class ConversionWorker(QThread):
@@ -157,7 +166,13 @@ class MainWindow(QMainWindow):
         self.convert_btn.setMinimumWidth(150)
         self.convert_btn.setEnabled(False)
 
+        self.share_btn = QPushButton("Convert & Share")
+        self.share_btn.setObjectName("shareButton")
+        self.share_btn.setMinimumWidth(150)
+        self.share_btn.setEnabled(False)
+
         button_layout.addWidget(self.convert_btn)
+        button_layout.addWidget(self.share_btn)
 
         # Add all sections to main layout
         main_layout.addWidget(top_section, 3)
@@ -203,6 +218,21 @@ class MainWindow(QMainWindow):
             #convertButton:disabled {
                 background-color: #6c757d;
             }
+            #shareButton {
+                padding: 12px 32px;
+                background-color: #0d6efd;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            #shareButton:hover {
+                background-color: #0b5ed7;
+            }
+            #shareButton:disabled {
+                background-color: #6c757d;
+            }
             QPushButton {
                 padding: 6px 16px;
             }
@@ -222,6 +252,12 @@ class MainWindow(QMainWindow):
         self.action_open_folder = QAction("Open Folder...", self)
         self.action_open_folder.setShortcut("Ctrl+Shift+O")
         file_menu.addAction(self.action_open_folder)
+
+        file_menu.addSeparator()
+
+        self.action_settings = QAction("Settings...", self)
+        self.action_settings.setShortcut("Ctrl+,")
+        file_menu.addAction(self.action_settings)
 
         file_menu.addSeparator()
 
@@ -268,10 +304,12 @@ class MainWindow(QMainWindow):
 
         # Convert button
         self.convert_btn.clicked.connect(self._start_conversion)
+        self.share_btn.clicked.connect(self._start_share)
 
         # Menu actions
         self.action_open.triggered.connect(self._open_files)
         self.action_open_folder.triggered.connect(self._open_folder)
+        self.action_settings.triggered.connect(self._show_settings)
         self.action_exit.triggered.connect(self.close)
         self.action_lang_en.triggered.connect(lambda: self._change_language("en"))
         self.action_lang_zh.triggered.connect(lambda: self._change_language("zh_CN"))
@@ -293,7 +331,8 @@ class MainWindow(QMainWindow):
         self.export_mode_selector.set_mode_texts(
             t("main.mode_default"), t("main.mode_zip"), t("main.mode_batch")
         )
-        self.convert_btn.setText(t("main.convert"))
+        self.convert_btn.setText(self.i18n.t("main.convert"))
+        self.share_btn.setText(self.i18n.t("cloud.convert_and_share"))
         self.progress_widget.set_status(t("status.ready"))
 
     @Slot(list)
@@ -306,6 +345,7 @@ class MainWindow(QMainWindow):
         """Update convert button state."""
         has_files = len(self.file_list.get_files()) > 0
         self.convert_btn.setEnabled(has_files)
+        self.share_btn.setEnabled(has_files)
 
     def _choose_output_dir(self):
         """Choose output directory."""
@@ -471,6 +511,137 @@ class MainWindow(QMainWindow):
             subprocess.run(["open", str(path)])
         else:
             subprocess.run(["xdg-open", str(path)])
+
+    def _show_settings(self):
+        """Show settings dialog."""
+        dialog = SettingsDialog(self)
+        dialog.settings_changed.connect(self._apply_translations)
+        dialog.exec()
+
+    def _start_share(self):
+        """Start convert and share process."""
+        import webbrowser
+
+        from PySide6.QtWidgets import QCheckBox
+
+        config = get_config()
+
+        # Check if token is configured
+        if not config.github_token:
+            QMessageBox.warning(
+                self,
+                self.i18n.t("cloud.upload_failed"),
+                self.i18n.t("cloud.no_token"),
+            )
+            self._show_settings()
+            return
+
+        # Show privacy warning if enabled
+        if config.privacy_warning_enabled:
+            msg = QMessageBox(self)
+            msg.setWindowTitle(self.i18n.t("cloud.privacy_warning_title"))
+            msg.setText(self.i18n.t("cloud.privacy_warning_message"))
+            msg.setIcon(QMessageBox.Icon.Warning)
+
+            dont_show_cb = QCheckBox(self.i18n.t("cloud.dont_show_again"))
+            msg.setCheckBox(dont_show_cb)
+
+            msg.setStandardButtons(
+                QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
+            )
+            msg.button(QMessageBox.StandardButton.Ok).setText(self.i18n.t("cloud.confirm_upload"))
+            msg.button(QMessageBox.StandardButton.Cancel).setText(self.i18n.t("cloud.cancel"))
+
+            result = msg.exec()
+
+            if result != QMessageBox.StandardButton.Ok:
+                return
+
+            if dont_show_cb.isChecked():
+                config.privacy_warning_enabled = False
+                save_config()
+
+        # Start conversion first
+        files = self.file_list.get_files()
+        if not files:
+            QMessageBox.warning(self, "Warning", self.i18n.t("messages.no_files"))
+            return
+
+        # For now, just convert the first file for sharing
+        file_to_share = files[0]
+
+        # Disable buttons
+        self.convert_btn.setEnabled(False)
+        self.share_btn.setEnabled(False)
+        self.share_btn.setText(self.i18n.t("cloud.sharing"))
+
+        # Convert file
+        output_dir = self.output_dir or file_to_share.parent
+        theme = self.theme_selector.get_selected_theme()
+
+        from PySide6.QtCore import QCoreApplication
+
+        QCoreApplication.processEvents()
+
+        result = self.converter.convert_file(file_to_share, output_dir, theme)
+
+        if not result.success:
+            QMessageBox.critical(
+                self, self.i18n.t("cloud.upload_failed"), result.error or "Unknown error"
+            )
+            self._reset_button_states()
+            return
+
+        # Now upload to GitHub
+        self.progress_widget.set_status(self.i18n.t("cloud.sharing"))
+
+        def progress_cb(curr, total, msg):
+            self.progress_widget.set_progress(curr, total, msg)
+            QCoreApplication.processEvents()
+
+        publisher = GitHubPublisher(
+            config.github_token, config.github_repo_name, progress_callback=progress_cb
+        )
+
+        publish_result = publisher.publish(result.output_file, result.assets_dir)
+
+        self._reset_button_states()
+
+        if publish_result.success:
+            # Show success dialog
+            msg = QMessageBox(self)
+            msg.setWindowTitle(self.i18n.t("cloud.success_title"))
+            msg.setText(
+                f"{self.i18n.t('cloud.success_message')}\n\n"
+                f"{self.i18n.t('cloud.public_link')}\n{publish_result.url}\n\n"
+                f"{self.i18n.t('cloud.first_time_hint')}"
+            )
+            msg.setIcon(QMessageBox.Icon.Information)
+
+            copy_btn = msg.addButton(
+                self.i18n.t("cloud.copy_link"), QMessageBox.ButtonRole.ActionRole
+            )
+            open_btn = msg.addButton(
+                self.i18n.t("cloud.open_in_browser"), QMessageBox.ButtonRole.ActionRole
+            )
+            msg.addButton(QMessageBox.StandardButton.Ok)
+
+            msg.exec()
+
+            if msg.clickedButton() == copy_btn:
+                QApplication.clipboard().setText(publish_result.url)
+                self.status_bar.showMessage(self.i18n.t("cloud.link_copied"))
+            elif msg.clickedButton() == open_btn:
+                webbrowser.open(publish_result.url)
+        else:
+            QMessageBox.critical(self, self.i18n.t("cloud.upload_failed"), publish_result.message)
+
+    def _reset_button_states(self):
+        """Reset button states after share operation."""
+        self.convert_btn.setEnabled(True)
+        self.share_btn.setEnabled(True)
+        self.convert_btn.setText(self.i18n.t("main.convert"))
+        self.share_btn.setText(self.i18n.t("cloud.convert_and_share"))
 
 
 def run_gui():
