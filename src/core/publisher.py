@@ -204,7 +204,6 @@ class GitHubPublisher:
             logger.warning(f"Pages setup error: {e}")
             return False
 
-
     def upload_file(
         self,
         repo: Repository,
@@ -362,19 +361,21 @@ class GitHubPublisher:
         try:
             repo = self.get_or_create_repo()
             contents = repo.get_contents("")
-            
+
             files = []
             base_url = self.get_pages_url()
-            
+
             for content in contents:
                 if content.type == "file" and content.name.endswith(".html"):
-                    files.append({
-                        "name": content.name,
-                        "path": content.path,
-                        "url": f"{base_url}{content.name}",
-                        "sha": content.sha,
-                    })
-            
+                    files.append(
+                        {
+                            "name": content.name,
+                            "path": content.path,
+                            "url": f"{base_url}{content.name}",
+                            "sha": content.sha,
+                        }
+                    )
+
             return files
         except GithubException as e:
             logger.error(f"Failed to list files: {e}")
@@ -522,16 +523,28 @@ class GitHubPublisher:
                 self._report_progress(progress, 100, f"Processing {file_path.name}...")
 
                 content = file_path.read_bytes()
-                
+
                 # Determine if file is binary (images, etc.) or text
                 # Use base64 for binary files, utf-8 for text files
-                binary_extensions = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.bmp', '.svg', '.pdf', '.zip'}
+                binary_extensions = {
+                    ".png",
+                    ".jpg",
+                    ".jpeg",
+                    ".gif",
+                    ".webp",
+                    ".ico",
+                    ".bmp",
+                    ".svg",
+                    ".pdf",
+                    ".zip",
+                }
                 file_ext = file_path.suffix.lower()
-                
+
                 if file_ext in binary_extensions:
                     # Binary file - use base64 encoding
                     import base64
-                    encoded_content = base64.b64encode(content).decode('ascii')
+
+                    encoded_content = base64.b64encode(content).decode("ascii")
                     blob = repo.create_git_blob(encoded_content, "base64")
                 else:
                     # Text file - use utf-8 encoding
@@ -540,11 +553,12 @@ class GitHubPublisher:
                     except UnicodeDecodeError:
                         # Fallback to base64 if not valid UTF-8
                         import base64
-                        encoded_content = base64.b64encode(content).decode('ascii')
+
+                        encoded_content = base64.b64encode(content).decode("ascii")
                         blob = repo.create_git_blob(encoded_content, "base64")
                     else:
                         blob = repo.create_git_blob(text_content, "utf-8")
-                
+
                 tree_elements.append(
                     InputGitTreeElement(
                         path=repo_path,
@@ -571,15 +585,17 @@ class GitHubPublisher:
 
             # Build result
             result.success = True
-            
+
             # Build URLs for HTML files only
             html_files = [f for f in files_to_publish]
             if len(html_files) == 1:
-                result.url = f"https://{username}.github.io/{self.repo_name}/{html_files[0][0].name}"
+                result.url = (
+                    f"https://{username}.github.io/{self.repo_name}/{html_files[0][0].name}"
+                )
             else:
                 # Return first URL but all files are uploaded
                 result.url = f"https://{username}.github.io/{self.repo_name}/"
-            
+
             result.message = f"Published successfully! {len(result.files_uploaded)} file(s) uploaded in single commit."
 
         except GithubException as e:

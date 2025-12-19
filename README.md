@@ -32,8 +32,16 @@
 
 ## 📸 Screenshots
 
-![Main Interface](assets/screenshot_gui.png)
-*Clean and modern GUI built with PySide6*
+| Main Interface | Theme Settings |
+|:--------------:|:--------------:|
+| ![Main Interface](assets/screenshot_gui.png) | ![Theme Settings](assets/主题配置.png) |
+| *Clean and modern GUI* | *Customize your themes* |
+
+| Cloud Share Settings | Published Pages Manager |
+|:--------------------:|:-----------------------:|
+| ![Cloud Settings](assets/云端分享设置-Github.png) | ![Pages Manager](assets/已发布页面管理.png) |
+| *Configure GitHub Token* | *Manage your published pages* |
+
 
 ## 🚀 Quick Start
 

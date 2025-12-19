@@ -360,7 +360,6 @@ class FileListWidget(QWidget):
         self.clear_btn.setText(text)
 
 
-
 class ThemeSelector(QWidget):
     """
     Widget for selecting a theme.

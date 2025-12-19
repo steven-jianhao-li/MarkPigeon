@@ -85,7 +85,7 @@ class Converter:
         # Use user themes dir from config if not specified
         if user_themes_dir is None:
             user_themes_dir = get_themes_dir()
-        
+
         self.parser = MarkdownParser()
         self.renderer = HtmlRenderer(themes_dir, user_themes_dir)
         self.default_theme = default_theme

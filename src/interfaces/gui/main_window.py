@@ -552,7 +552,7 @@ class MainWindow(QMainWindow):
         """Start convert and share process for multiple files with batch commit."""
         import webbrowser
 
-        from PySide6.QtWidgets import QCheckBox, QButtonGroup, QRadioButton
+        from PySide6.QtWidgets import QCheckBox
 
         config = get_config()
 
@@ -618,13 +618,13 @@ class MainWindow(QMainWindow):
         files_to_publish = []  # List of (html_path, assets_dir, original_name)
         errors = []
         total_files = len(files)
-        
+
         # Track conflict handling preference for "apply to all"
         conflict_action_all = None  # None, 'rename', 'overwrite', 'skip'
 
         for i, file_to_share in enumerate(files, 1):
             QCoreApplication.processEvents()
-            
+
             # Update progress
             self.progress_widget.set_status(
                 f"{self.i18n.t('cloud.sharing')} ({i}/{total_files}): {file_to_share.name}"
@@ -642,20 +642,20 @@ class MainWindow(QMainWindow):
             # Check if file already exists
             html_filename = result.output_file.name
             exists, _ = publisher.check_file_exists(html_filename)
-            
+
             if exists:
                 action = conflict_action_all
-                
+
                 if action is None:
                     # Show conflict dialog
                     action, apply_to_all = self._show_conflict_dialog(html_filename)
-                    
+
                     if apply_to_all:
                         conflict_action_all = action
-                
-                if action == 'skip':
+
+                if action == "skip":
                     continue
-                elif action == 'rename':
+                elif action == "rename":
                     # Generate new filename with suffix
                     new_filename = self._generate_unique_filename(publisher, html_filename)
                     # Rename the file
@@ -670,11 +670,11 @@ class MainWindow(QMainWindow):
         if files_to_publish:
             self.progress_widget.set_status(self.i18n.t("cloud.sharing"))
             QCoreApplication.processEvents()
-            
+
             # Prepare files for batch publish
             batch_files = [(html_path, assets_dir) for html_path, assets_dir, _ in files_to_publish]
             publish_result = publisher.publish_batch(batch_files)
-            
+
             if publish_result.success:
                 # Build URLs for each file
                 base_url = publisher.get_pages_url()
@@ -694,7 +694,7 @@ class MainWindow(QMainWindow):
         if published_urls:
             # Build success message
             url_list = "\n".join([f"• {name}: {url}" for name, url in published_urls])
-            
+
             if len(published_urls) == 1:
                 msg_text = (
                     f"{self.i18n.t('cloud.success_message')}\n\n"
@@ -707,7 +707,7 @@ class MainWindow(QMainWindow):
                     f"{self.i18n.t('cloud.published_files')}\n{url_list}\n\n"
                     f"{self.i18n.t('cloud.first_time_hint')}"
                 )
-            
+
             if errors:
                 msg_text += f"\n\n⚠️ {len(errors)} file(s) failed:\n" + "\n".join(errors)
 
@@ -746,52 +746,56 @@ class MainWindow(QMainWindow):
     def _show_conflict_dialog(self, filename: str) -> tuple[str, bool]:
         """
         Show a dialog for handling file conflicts.
-        
+
         Returns:
             Tuple of (action, apply_to_all) where action is 'rename', 'overwrite', or 'skip'
         """
-        from PySide6.QtWidgets import QCheckBox, QDialogButtonBox
-        
+        from PySide6.QtWidgets import QCheckBox
+
         dialog = QMessageBox(self)
         dialog.setWindowTitle(self.i18n.t("conflict.title"))
         dialog.setText(self.i18n.t("conflict.message", filename=filename))
         dialog.setIcon(QMessageBox.Icon.Question)
-        
+
         # Add buttons
-        rename_btn = dialog.addButton(self.i18n.t("conflict.rename"), QMessageBox.ButtonRole.ActionRole)
-        overwrite_btn = dialog.addButton(self.i18n.t("conflict.overwrite"), QMessageBox.ButtonRole.ActionRole)
-        skip_btn = dialog.addButton(self.i18n.t("conflict.skip"), QMessageBox.ButtonRole.RejectRole)
-        
+        rename_btn = dialog.addButton(
+            self.i18n.t("conflict.rename"), QMessageBox.ButtonRole.ActionRole
+        )
+        overwrite_btn = dialog.addButton(
+            self.i18n.t("conflict.overwrite"), QMessageBox.ButtonRole.ActionRole
+        )
+        _skip_btn = dialog.addButton(self.i18n.t("conflict.skip"), QMessageBox.ButtonRole.RejectRole)
+
         # Add checkbox for "apply to all"
         apply_all_cb = QCheckBox(self.i18n.t("conflict.apply_to_all"))
         dialog.setCheckBox(apply_all_cb)
-        
+
         dialog.exec()
-        
+
         clicked = dialog.clickedButton()
         apply_to_all = apply_all_cb.isChecked()
-        
+
         if clicked == rename_btn:
-            return 'rename', apply_to_all
+            return "rename", apply_to_all
         elif clicked == overwrite_btn:
-            return 'overwrite', apply_to_all
+            return "overwrite", apply_to_all
         else:
-            return 'skip', apply_to_all
+            return "skip", apply_to_all
 
     def _generate_unique_filename(self, publisher, filename: str) -> str:
         """Generate a unique filename by adding a numeric suffix."""
         import re
-        
-        base, ext = filename.rsplit('.', 1) if '.' in filename else (filename, '')
-        
+
+        base, ext = filename.rsplit(".", 1) if "." in filename else (filename, "")
+
         # Check for existing suffix pattern like _1, _2, etc.
-        match = re.match(r'^(.+)_(\d+)$', base)
+        match = re.match(r"^(.+)_(\d+)$", base)
         if match:
             base = match.group(1)
             counter = int(match.group(2)) + 1
         else:
             counter = 1
-        
+
         while True:
             new_name = f"{base}_{counter}.{ext}" if ext else f"{base}_{counter}"
             exists, _ = publisher.check_file_exists(new_name)
@@ -800,7 +804,7 @@ class MainWindow(QMainWindow):
             counter += 1
             if counter > 100:  # Safety limit
                 break
-        
+
         return new_name
 
     def _reset_button_states(self):
@@ -835,7 +839,7 @@ def _get_icon_path():
     from pathlib import Path
 
     # Check if running as frozen executable
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         # Running as compiled
         base_path = Path(sys.executable).parent
     else:

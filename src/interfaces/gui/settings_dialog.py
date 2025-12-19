@@ -22,9 +22,9 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
-    QTabWidget,
     QTableWidget,
     QTableWidgetItem,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -193,7 +193,6 @@ class SettingsDialog(QDialog):
         """Create the Themes settings tab."""
         from pathlib import Path
 
-        from ...core.converter import Converter
 
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -290,14 +289,20 @@ class SettingsDialog(QDialog):
         # Table for published pages
         self.pages_table = QTableWidget()
         self.pages_table.setColumnCount(3)
-        self.pages_table.setHorizontalHeaderLabels([
-            t("pages_manager.filename"),
-            t("pages_manager.url"),
-            t("pages_manager.actions"),
-        ])
-        self.pages_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.pages_table.setHorizontalHeaderLabels(
+            [
+                t("pages_manager.filename"),
+                t("pages_manager.url"),
+                t("pages_manager.actions"),
+            ]
+        )
+        self.pages_table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.ResizeToContents
+        )
         self.pages_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.pages_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.pages_table.horizontalHeader().setSectionResizeMode(
+            2, QHeaderView.ResizeMode.ResizeToContents
+        )
         self.pages_table.setAlternatingRowColors(True)
         self.pages_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.pages_table.verticalHeader().setVisible(False)
@@ -342,7 +347,7 @@ class SettingsDialog(QDialog):
                 name_item.setFlags(name_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self.pages_table.setItem(row, 0, name_item)
 
-                # URL  
+                # URL
                 url_item = QTableWidgetItem(file_info["url"])
                 url_item.setFlags(url_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 url_item.setToolTip(file_info["url"])
@@ -356,12 +361,16 @@ class SettingsDialog(QDialog):
 
                 copy_btn = QPushButton(t("pages_manager.copy"))
                 copy_btn.setProperty("url", file_info["url"])
-                copy_btn.clicked.connect(lambda checked, url=file_info["url"]: self._copy_page_url(url))
+                copy_btn.clicked.connect(
+                    lambda checked, url=file_info["url"]: self._copy_page_url(url)
+                )
                 copy_btn.setMaximumWidth(60)
 
                 delete_btn = QPushButton(t("pages_manager.delete"))
                 delete_btn.setProperty("filename", file_info["name"])
-                delete_btn.clicked.connect(lambda checked, name=file_info["name"]: self._delete_page(name))
+                delete_btn.clicked.connect(
+                    lambda checked, name=file_info["name"]: self._delete_page(name)
+                )
                 delete_btn.setMaximumWidth(60)
                 delete_btn.setStyleSheet("color: #dc3545;")
 
