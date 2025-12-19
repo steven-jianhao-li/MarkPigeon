@@ -154,6 +154,59 @@ class DropZone(QFrame):
         self.browse_btn.setText(text)
 
 
+class FileItemWidget(QWidget):
+    """Custom widget for a file item with delete button."""
+
+    delete_clicked = Signal(Path)
+
+    def __init__(self, file_path: Path, parent: QWidget | None = None):
+        super().__init__(parent)
+        self.file_path = file_path
+        self._setup_ui()
+
+    def _setup_ui(self):
+        """Set up the UI."""
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(8, 4, 8, 4)
+        layout.setSpacing(8)
+
+        # File icon and name
+        self.name_label = QLabel(f"📄 {self.file_path.name}")
+        self.name_label.setToolTip(str(self.file_path))
+        layout.addWidget(self.name_label, 1)
+
+        # Delete button
+        self.delete_btn = QPushButton("✕")
+        self.delete_btn.setObjectName("deleteItemBtn")
+        self.delete_btn.setFixedSize(24, 24)
+        self.delete_btn.setToolTip("Remove this file")
+        self.delete_btn.clicked.connect(self._on_delete)
+        layout.addWidget(self.delete_btn)
+
+        self._apply_styles()
+
+    def _apply_styles(self):
+        """Apply styles."""
+        self.setStyleSheet("""
+            #deleteItemBtn {
+                background-color: transparent;
+                border: none;
+                color: #6c757d;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 12px;
+            }
+            #deleteItemBtn:hover {
+                background-color: #dc3545;
+                color: white;
+            }
+        """)
+
+    def _on_delete(self):
+        """Handle delete button click."""
+        self.delete_clicked.emit(self.file_path)
+
+
 class FileListWidget(QWidget):
     """
     Widget displaying a list of files to be converted.
@@ -169,6 +222,7 @@ class FileListWidget(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self._files: list[Path] = []
+        self._header_format: str = "Files ({count})"
         self._setup_ui()
 
     def _setup_ui(self):
@@ -223,12 +277,23 @@ class FileListWidget(QWidget):
             #fileList {
                 border: 1px solid #dee2e6;
                 border-radius: 4px;
+                background-color: white;
             }
             #fileList::item {
-                padding: 8px;
+                padding: 0px;
+                border-bottom: 1px solid #f0f0f0;
             }
             #fileList::item:alternate {
                 background-color: #f8f9fa;
+            }
+            #fileList::item:selected {
+                background-color: #0d6efd;
+            }
+            #fileList::item:hover {
+                background-color: #e9ecef;
+            }
+            #fileList::item:selected:hover {
+                background-color: #0b5ed7;
             }
         """)
 
@@ -238,12 +303,35 @@ class FileListWidget(QWidget):
             if file_path not in self._files:
                 self._files.append(file_path)
 
-                item = QListWidgetItem(f"📄 {file_path.name}")
-                item.setToolTip(str(file_path))
+                # Create list item
+                item = QListWidgetItem()
                 item.setData(Qt.ItemDataRole.UserRole, file_path)
+                item.setSizeHint(QLabel("").sizeHint())  # Will be sized by widget
+
+                # Create custom widget
+                item_widget = FileItemWidget(file_path)
+                item_widget.delete_clicked.connect(self._remove_file)
+                item.setSizeHint(item_widget.sizeHint())
+
                 self.list_widget.addItem(item)
+                self.list_widget.setItemWidget(item, item_widget)
 
         self._update_count()
+
+    def _remove_file(self, file_path: Path):
+        """Remove a single file from the list."""
+        if file_path in self._files:
+            self._files.remove(file_path)
+
+            # Find and remove the item
+            for i in range(self.list_widget.count()):
+                item = self.list_widget.item(i)
+                if item and item.data(Qt.ItemDataRole.UserRole) == file_path:
+                    self.list_widget.takeItem(i)
+                    break
+
+            self._update_count()
+            self.file_removed.emit(file_path)
 
     def get_files(self) -> list[Path]:
         """Get list of files."""
@@ -259,13 +347,18 @@ class FileListWidget(QWidget):
     def _update_count(self):
         """Update the file count label."""
         count = len(self._files)
-        self.count_label.setText(f"Files ({count})")
+        self.count_label.setText(self._header_format.format(count=count))
         self.clear_btn.setEnabled(count > 0)
 
     def set_header_text(self, text: str):
         """Set the header text template (use {count} for count)."""
-        count = len(self._files)
-        self.count_label.setText(text.format(count=count))
+        self._header_format = text
+        self._update_count()
+
+    def set_clear_text(self, text: str):
+        """Set the clear button text."""
+        self.clear_btn.setText(text)
+
 
 
 class ThemeSelector(QWidget):

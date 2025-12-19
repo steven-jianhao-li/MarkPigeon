@@ -65,16 +65,29 @@ class Converter:
     4. Optionally pack to ZIP
     """
 
-    def __init__(self, themes_dir: Path | None = None, default_theme: str | None = None):
+    def __init__(
+        self,
+        themes_dir: Path | None = None,
+        default_theme: str | None = None,
+        user_themes_dir: Path | None = None,
+    ):
         """
         Initialize the converter.
 
         Args:
-            themes_dir: Custom themes directory
+            themes_dir: Custom bundled themes directory
             default_theme: Default theme to use
+            user_themes_dir: User themes directory (user themes have priority)
         """
+        # Import here to avoid circular imports
+        from .config import get_themes_dir
+
+        # Use user themes dir from config if not specified
+        if user_themes_dir is None:
+            user_themes_dir = get_themes_dir()
+        
         self.parser = MarkdownParser()
-        self.renderer = HtmlRenderer(themes_dir)
+        self.renderer = HtmlRenderer(themes_dir, user_themes_dir)
         self.default_theme = default_theme
         self._progress_callback: ProgressCallback | None = None
 

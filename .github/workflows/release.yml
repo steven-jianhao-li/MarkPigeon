@@ -40,7 +40,27 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --windowed --name ${{ matrix.artifact_name }} src/main.py
+        pyinstaller --onefile --windowed --name ${{ matrix.artifact_name }} \
+          --add-data "locales:locales" \
+          --add-data "themes:themes" \
+          --hidden-import=src \
+          --hidden-import=src.core \
+          --hidden-import=src.core.parser \
+          --hidden-import=src.core.renderer \
+          --hidden-import=src.core.packer \
+          --hidden-import=src.core.converter \
+          --hidden-import=src.core.config \
+          --hidden-import=src.core.publisher \
+          --hidden-import=src.core.i18n \
+          --hidden-import=src.interfaces \
+          --hidden-import=src.interfaces.cli \
+          --hidden-import=src.interfaces.cli.main \
+          --hidden-import=src.interfaces.gui \
+          --hidden-import=src.interfaces.gui.main_window \
+          --hidden-import=src.interfaces.gui.components \
+          --hidden-import=src.interfaces.gui.settings_dialog \
+          run.py
+      shell: bash
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
