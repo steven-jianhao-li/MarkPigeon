@@ -97,22 +97,22 @@ a:hover { text-decoration: underline; }
             self.themes_dir = Path(__file__).parent.parent.parent.parent / "themes"
         else:
             self.themes_dir = Path(themes_dir)
-        
+
         # User themes directory (optional)
         self.user_themes_dir = Path(user_themes_dir) if user_themes_dir else None
 
     def get_available_themes(self) -> list[str]:
         """Get list of available theme names (merged from bundled and user themes)."""
         themes = set()
-        
+
         # Get bundled themes
         if self.themes_dir.exists():
             themes.update(f.stem for f in self.themes_dir.glob("*.css"))
-        
+
         # Get user themes (these will appear in addition to bundled ones)
         if self.user_themes_dir and self.user_themes_dir.exists():
             themes.update(f.stem for f in self.user_themes_dir.glob("*.css"))
-        
+
         return sorted(themes)
 
     def load_theme_css(self, theme_name: str | None = None) -> str:
@@ -137,7 +137,7 @@ a:hover { text-decoration: underline; }
                     return user_theme_file.read_text(encoding="utf-8")
                 except Exception as e:
                     logger.error(f"Failed to load user theme {theme_name}: {e}")
-        
+
         # Fall back to bundled themes
         theme_file = self.themes_dir / f"{theme_name}.css"
 
