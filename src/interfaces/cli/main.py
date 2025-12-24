@@ -40,6 +40,7 @@ Examples:
   markpigeon docs/ --output dist/           Convert directory
   markpigeon *.md --zip                     Convert and create individual ZIPs
   markpigeon docs/ --batch --recursive      Convert all and create single ZIP
+  markpigeon document.md --standalone       Convert to standalone HTML file
 """,
         )
 
@@ -54,6 +55,8 @@ Examples:
         parser.add_argument("-z", "--zip", action="store_true", help=t("cli.zip_help"))
 
         parser.add_argument("-b", "--batch", action="store_true", help=t("cli.batch_help"))
+
+        parser.add_argument("-s", "--standalone", action="store_true", help=t("cli.standalone_help"))
 
         parser.add_argument("-r", "--recursive", action="store_true", help=t("cli.recursive_help"))
 
@@ -97,7 +100,9 @@ Examples:
             return self._list_themes()
 
         # Determine export mode
-        if parsed.batch:
+        if parsed.standalone:
+            export_mode = ExportMode.STANDALONE
+        elif parsed.batch:
             export_mode = ExportMode.BATCH_ZIP
         elif parsed.zip:
             export_mode = ExportMode.INDIVIDUAL_ZIP

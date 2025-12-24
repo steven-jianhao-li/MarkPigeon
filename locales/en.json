@@ -87,6 +87,7 @@
         "theme_help": "Theme name to use",
         "zip_help": "Create individual ZIP for each file",
         "batch_help": "Create single ZIP containing all outputs",
+        "standalone_help": "Create standalone HTML file with embedded images (base64)",
         "recursive_help": "Process subdirectories recursively",
         "list_themes_help": "List available themes and exit",
         "lang_help": "Interface language (en, zh_CN)",

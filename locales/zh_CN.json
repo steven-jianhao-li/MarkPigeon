@@ -87,6 +87,7 @@
         "theme_help": "使用的主题名称",
         "zip_help": "为每个文件创建单独的 ZIP",
         "batch_help": "将所有输出打包为单个 ZIP",
+        "standalone_help": "创建独立 HTML 文件（图片嵌入为 base64）",
         "recursive_help": "递归处理子目录",
         "list_themes_help": "列出可用主题后退出",
         "lang_help": "界面语言（en, zh_CN）",
